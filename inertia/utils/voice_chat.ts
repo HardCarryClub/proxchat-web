@@ -19,5 +19,10 @@ export function calculateVolume(volume: number, distance: number, disableLog = t
     console.log('adjustedVolume', adjustedVolume)
   }
 
-  return adjustedVolume
+  if (Number.isNaN(adjustedVolume)) {
+    console.error('adjustedVolume is NaN')
+    console.error('volume', volume, 'distance', distance, 'volumeDecayRate', volumeDecayRate)
+  }
+
+  return Number.isNaN(adjustedVolume) ? 0 : adjustedVolume
 }

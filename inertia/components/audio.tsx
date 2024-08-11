@@ -5,29 +5,28 @@ import { calculateVolume } from '~/utils/voice_chat'
 export function AudioItem({
   participant,
   volume,
+  distance,
   muted,
 }: {
   participant: DailyParticipant
-  volume: {
-    volume: number
-    distance: number
-  }
-  muted: string[]
+  volume: number
+  distance: number
+  muted: boolean
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
     if (audioRef.current) {
-      if (muted.includes(participant.session_id)) {
+      if (muted) {
         audioRef.current.volume = 0
       } else {
-        const adjustedVolume = calculateVolume(volume.volume ?? 100, volume.distance ?? 0)
+        const adjustedVolume = calculateVolume(volume ?? 100, distance ?? 0)
         console.log('volume in audio.tsx', volume)
         console.log('adjustedVolume in audio.tsx', adjustedVolume)
         audioRef.current.volume = adjustedVolume / 100
       }
     }
-  }, [volume, audioRef, muted])
+  }, [volume, distance, audioRef, muted])
 
   useEffect(() => {
     if (!audioRef.current || participant.local || !participant.tracks.audio.persistentTrack) {
@@ -72,11 +71,9 @@ export default function Audio({
           <AudioItem
             key={participant.user_id}
             participant={participant}
-            volume={{
-              volume: volumes[participant.session_id].volume ?? 100,
-              distance: volumes[participant.session_id].distance ?? 0,
-            }}
-            muted={muted}
+            volume={volumes[participant.session_id].volume}
+            distance={volumes[participant.session_id].distance}
+            muted={muted.includes(participant.session_id)}
           />
         ))}
     </>
