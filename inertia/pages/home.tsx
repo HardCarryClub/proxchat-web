@@ -162,7 +162,7 @@ export default function Home(props: HomeProps) {
 
     callObject
       .join({
-        url: `https://hardcarryclub.daily.co/${import.meta.env.VITE_ROOM_ID}`,
+        url: `https://hardcarryclub.daily.co/${import.meta.env.VITE_ROOM_ID ?? 'proxchat-prod'}`,
         userName: userName,
         userData: {
           userId: props.userId,
