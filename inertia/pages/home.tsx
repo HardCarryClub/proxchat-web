@@ -44,19 +44,19 @@ export default function Home(props: HomeProps) {
   const participantsRef = useRef(participants)
   const volumeRef = useRef(participantsVolume)
 
-  navigator.mediaDevices
-    .getUserMedia({ audio: true })
-    .then(() => {
-      console.log('Microphone access granted')
+  useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(() => {
+        console.log('Microphone access granted')
 
-      return navigator.mediaDevices.enumerateDevices()
-    })
-    .then((devices) => {
-      const mics = devices.filter((device) => device.kind === 'audioinput')
-      // const outs = devices.filter((device) => device.kind === 'audiooutput')
-      setMicrophones(mics)
-      // setSpeakers(outs)
-    })
+        return navigator.mediaDevices.enumerateDevices()
+      })
+      .then((devices) => {
+        const mics = devices.filter((device) => device.kind === 'audioinput')
+        setMicrophones(mics)
+      })
+  }, [])
 
   useEffect(() => {
     participantsRef.current = participants
