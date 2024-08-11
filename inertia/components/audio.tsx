@@ -27,7 +27,7 @@ export function AudioItem({
         audioRef.current.volume = adjustedVolume / 100
       }
     }
-  }, [volume, audioRef])
+  }, [volume, audioRef, muted])
 
   useEffect(() => {
     if (!audioRef.current || participant.local || !participant.tracks.audio.persistentTrack) {
