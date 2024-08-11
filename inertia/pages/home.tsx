@@ -215,6 +215,18 @@ export default function Home(props: HomeProps) {
           userName: props.username,
           avatar: props.avatar,
         },
+        dailyConfig: {
+          micAudioMode: {
+            bitrate: 128000,
+            stereo: false,
+          },
+          userMediaAudioConstraints: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+          },
+        },
       })
       .then(() => {
         setHasJoinedVC(true)
