@@ -121,6 +121,23 @@ export default function Home(props: HomeProps) {
 
       call.on('participant-updated', (event) => {
         console.log('participant-updated', event)
+
+        if (event.participant.local) {
+          return
+        }
+
+        setParticipants((prevParticipants) => ({
+          ...prevParticipants,
+          [event.participant.session_id]: event.participant,
+        }))
+
+        setParticipantsVolume((prevVolumes) => ({
+          ...prevVolumes,
+          [event.participant.session_id]: {
+            volume: 100,
+            distance: 0,
+          },
+        }))
       })
 
       call.on('participant-joined', (event) => {
