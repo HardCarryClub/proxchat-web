@@ -216,16 +216,13 @@ export default function Home(props: HomeProps) {
           avatar: props.avatar,
         },
         dailyConfig: {
-          micAudioMode: {
-            bitrate: 128000,
-            stereo: false,
-          },
-          userMediaAudioConstraints: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true,
-            channelCount: 1,
-          },
+          micAudioMode: 'speech',
+          // userMediaAudioConstraints: {
+          //   echoCancellation: true,
+          //   noiseSuppression: true,
+          //   autoGainControl: true,
+          //   channelCount: 1,
+          // },
         },
       })
       .then(() => {
