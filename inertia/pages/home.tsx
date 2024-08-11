@@ -388,10 +388,8 @@ export default function Home(props: HomeProps) {
                       <span className="ml-2 text-xs text-gray-500">
                         {(participant.userData as any).displayName}
                       </span>
-                      {import.meta.env.DEV
-                        ? ` (Adj. Vol = ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0)).toPrecision(4)} /
-                        ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0) / 100).toPrecision(2)})`
-                        : ''}
+                      {` (Adj. Vol = ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0)).toPrecision(4)} /
+                        ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0) / 100).toPrecision(2)})`}
 
                       <span>
                         <button
