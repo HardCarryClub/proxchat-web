@@ -16,50 +16,50 @@ export function AudioItem({
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  const targetVolumeRef = useRef(
-    muted.includes(participant.session_id)
-      ? 0
-      : calculateVolume(volume.volume ?? 100, volume.distance ?? 0) / 100
-  )
-
-  useEffect(() => {
-    const audioElement = audioRef.current
-    if (!audioElement) return
-
-    targetVolumeRef.current = muted.includes(participant.session_id)
-      ? 0
-      : calculateVolume(volume.volume ?? 100, volume.distance ?? 0) / 100
-
-    let frameId: any
-
-    const smoothVolumeChange = () => {
-      if (Math.abs(audioElement.volume - targetVolumeRef.current) > 0.01) {
-        audioElement.volume += (targetVolumeRef.current - audioElement.volume) * 0.1
-        frameId = requestAnimationFrame(smoothVolumeChange)
-      } else {
-        audioElement.volume = targetVolumeRef.current
-        cancelAnimationFrame(frameId)
-      }
-    }
-
-    frameId = requestAnimationFrame(smoothVolumeChange)
-
-    // Cleanup function to cancel animation frame if the component unmounts
-    return () => cancelAnimationFrame(frameId)
-  }, [volume])
+  // const targetVolumeRef = useRef(
+  //   muted.includes(participant.session_id)
+  //     ? 0
+  //     : calculateVolume(volume.volume ?? 100, volume.distance ?? 0) / 100
+  // )
 
   // useEffect(() => {
-  //   if (audioRef.current) {
-  //     if (volume.muted) {
-  //       audioRef.current.volume = 0
+  //   const audioElement = audioRef.current
+  //   if (!audioElement) return
+
+  //   targetVolumeRef.current = muted.includes(participant.session_id)
+  //     ? 0
+  //     : calculateVolume(volume.volume ?? 100, volume.distance ?? 0) / 100
+
+  //   let frameId: any
+
+  //   const smoothVolumeChange = () => {
+  //     if (Math.abs(audioElement.volume - targetVolumeRef.current) > 0.01) {
+  //       audioElement.volume += (targetVolumeRef.current - audioElement.volume) * 0.1
+  //       frameId = requestAnimationFrame(smoothVolumeChange)
   //     } else {
-  //       const adjustedVolume = calculateVolume(volume.volume ?? 100, volume.distance ?? 0)
-  //       console.log('volume in audio.tsx', volume)
-  //       console.log('adjustedVolume in audio.tsx', adjustedVolume)
-  //       audioRef.current.volume = 1
+  //       audioElement.volume = targetVolumeRef.current
+  //       cancelAnimationFrame(frameId)
   //     }
   //   }
-  // }, [volume, audioRef])
+
+  //   frameId = requestAnimationFrame(smoothVolumeChange)
+
+  //   // Cleanup function to cancel animation frame if the component unmounts
+  //   return () => cancelAnimationFrame(frameId)
+  // }, [volume])
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (muted.includes(participant.session_id)) {
+        audioRef.current.volume = 0
+      } else {
+        const adjustedVolume = calculateVolume(volume.volume ?? 100, volume.distance ?? 0)
+        console.log('volume in audio.tsx', volume)
+        console.log('adjustedVolume in audio.tsx', adjustedVolume)
+        audioRef.current.volume = adjustedVolume / 100
+      }
+    }
+  }, [volume, audioRef])
 
   useEffect(() => {
     if (!audioRef.current || participant.local || !participant.tracks.audio.persistentTrack) {
