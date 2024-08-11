@@ -2,9 +2,9 @@ import { Head } from '@inertiajs/react'
 import { useEffect, useRef, useState } from 'react'
 import { useTransmit } from '~/providers/transmit'
 import Daily, { DailyCall, DailyParticipant } from '@daily-co/daily-js'
-import Audio from '~/components/audio'
 import { Volume2, VolumeX, RotateCcw } from 'lucide-react'
 import { calculateVolume } from '~/utils/voice_chat'
+import Audio from '~/components/audio'
 
 interface HomeProps {
   userId: string
@@ -47,47 +47,41 @@ export default function Home(props: HomeProps) {
     participantsRef.current = participants
   }, [participants])
 
-  // Update the ref whenever userName changes
   useEffect(() => {
     userNameRef.current = userName
   }, [userName])
 
   useEffect(() => {
     const handleDataMessage = (data: any) => {
-      // console.log('data', data)
-
       if (data.player && data.players) {
         const logLine: LogLine = data
         const { player, players } = logLine
-        // console.log(userNameRef.current)
-        if (player === userNameRef.current) {
-          for (const otherPlayer of players) {
-            if (otherPlayer.name === userNameRef.current) {
-              continue
-            }
 
-            // console.log('otherPlayer', otherPlayer)
-            const sessionId = Object.keys(participantsRef.current).find(
-              (key) => participantsRef.current[key].user_name === otherPlayer.name
-            )
+        if (player !== userNameRef.current) {
+          return
+        }
 
-            // console.log(participantsRef.current)
-
-            if (!sessionId) {
-              console.log('Participant not found', otherPlayer.name)
-              continue
-            }
-
-            setParticipantsVolume((prevVolumes) => ({
-              ...prevVolumes,
-              [sessionId]: {
-                volume: participantsVolume[sessionId]?.volume,
-                distance: otherPlayer.distance,
-              },
-            }))
+        for (const otherPlayer of players) {
+          if (otherPlayer.name === userNameRef.current) {
+            continue
           }
-          // console.log('participants', participants)
-          // console.log('participantsVolume', participantsVolume)
+
+          const sessionId = Object.keys(participantsRef.current).find(
+            (key) => participantsRef.current[key].user_name === otherPlayer.name
+          )
+
+          if (!sessionId) {
+            console.log('Participant not found', otherPlayer.name)
+            continue
+          }
+
+          setParticipantsVolume((prevVolumes) => ({
+            ...prevVolumes,
+            [sessionId]: {
+              ...participantsVolume[sessionId],
+              distance: otherPlayer.distance,
+            },
+          }))
         }
       }
     }
@@ -96,6 +90,20 @@ export default function Home(props: HomeProps) {
   }, [subscription])
 
   useEffect(() => {
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(() => {
+        console.log('Microphone access granted')
+
+        return navigator.mediaDevices.enumerateDevices()
+      })
+      .then((devices) => {
+        const mics = devices.filter((device) => device.kind === 'audioinput')
+        // const outs = devices.filter((device) => device.kind === 'audiooutput')
+        setMicrophones(mics)
+        // setSpeakers(outs)
+      })
+
     subscription
       .create()
       .then(() => {
@@ -107,7 +115,60 @@ export default function Home(props: HomeProps) {
         console.log('Failed to connect to the channel', err)
       })
 
+    if (!callObject) {
+      const call = Daily.createCallObject()
+      setCallObject(call)
+
+      call.on('participant-updated', (event) => {
+        console.log('participant-updated', event)
+      })
+
+      call.on('participant-joined', (event) => {
+        console.log('participant-joined', event)
+
+        if (event.participant.local) {
+          return
+        }
+
+        setParticipants((prevParticipants) => ({
+          ...prevParticipants,
+          [event.participant.session_id]: event.participant,
+        }))
+
+        setParticipantsVolume((prevVolumes) => ({
+          ...prevVolumes,
+          [event.participant.session_id]: {
+            volume: 100,
+            distance: 0,
+          },
+        }))
+      })
+
+      call.on('participant-left', (event) => {
+        console.log('participant-left', event)
+
+        setParticipants((prevParticipants) => {
+          const updatedParticipants = { ...prevParticipants }
+          delete updatedParticipants[event.participant.session_id]
+
+          return updatedParticipants
+        })
+
+        setParticipantsVolume((prevVolumes) => {
+          const updatedVolumes = { ...prevVolumes }
+          delete updatedVolumes[event.participant.session_id]
+
+          return updatedVolumes
+        })
+      })
+    }
+
     return () => {
+      if (callObject) {
+        callObject.leave()
+        callObject.destroy()
+      }
+
       subscription.delete()
     }
   }, [])
@@ -128,22 +189,6 @@ export default function Home(props: HomeProps) {
       setIsMuted(true)
     }
   }
-
-  useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then(() => {
-        console.log('Microphone access granted')
-
-        return navigator.mediaDevices.enumerateDevices()
-      })
-      .then((devices) => {
-        const mics = devices.filter((device) => device.kind === 'audioinput')
-        // const outs = devices.filter((device) => device.kind === 'audiooutput')
-        setMicrophones(mics)
-        // setSpeakers(outs)
-      })
-  }, [])
 
   const handleMicChange = (e: any) => {
     const deviceId = e.target.value
@@ -180,59 +225,6 @@ export default function Home(props: HomeProps) {
         setIsJoiningVC(false)
       })
   }
-
-  useEffect(() => {
-    if (!callObject) {
-      const call = Daily.createCallObject()
-      setCallObject(call)
-
-      // Event listener for participant updates
-      call.on('participant-updated', (event) => {
-        console.log('participant-updated', event)
-        if (event.participant.local) {
-          return
-        }
-
-        setParticipants((prevParticipants) => ({
-          ...prevParticipants,
-          [event.participant.session_id]: event.participant,
-        }))
-
-        setParticipantsVolume((prevVolumes) => ({
-          ...prevVolumes,
-          [event.participant.session_id]: {
-            volume: 100,
-            distance: 0,
-          },
-        }))
-      })
-
-      // Event listener for when a participant leaves
-      call.on('participant-left', (event) => {
-        console.log('participant-left', event)
-        setParticipants((prevParticipants) => {
-          const updatedParticipants = { ...prevParticipants }
-          delete updatedParticipants[event.participant.session_id]
-
-          return updatedParticipants
-        })
-
-        setParticipantsVolume((prevVolumes) => {
-          const updatedVolumes = { ...prevVolumes }
-          delete updatedVolumes[event.participant.session_id]
-
-          return updatedVolumes
-        })
-      })
-    }
-
-    return () => {
-      if (callObject) {
-        callObject.leave()
-        callObject.destroy()
-      }
-    }
-  }, [])
 
   const leaveVoiceChat = () => {
     if (callObject) {
@@ -388,8 +380,8 @@ export default function Home(props: HomeProps) {
                       <span className="ml-2 text-xs text-gray-500">
                         {(participant.userData as any).displayName}
                       </span>
-                      {` (Adj. Vol = ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0)).toPrecision(4)} /
-                        ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume ?? 100, participantsVolume[participant.session_id]?.distance ?? 0) / 100).toPrecision(2)})`}
+                      {` (Adj. Vol = ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume, participantsVolume[participant.session_id]?.distance)).toPrecision(4)} /
+                        ${Number(calculateVolume(participantsVolume[participant.session_id]?.volume, participantsVolume[participant.session_id]?.distance) / 100).toPrecision(2)})`}
 
                       <span>
                         <button
