@@ -53,6 +53,8 @@ export default function Home(props: HomeProps) {
 
   useEffect(() => {
     const handleDataMessage = (data: any) => {
+      console.log('received logline data', data)
+
       if (data.player && data.players) {
         const logLine: LogLine = data
         const { player, players } = logLine
