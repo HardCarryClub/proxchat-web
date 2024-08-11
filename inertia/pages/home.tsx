@@ -42,6 +42,21 @@ export default function Home(props: HomeProps) {
 
   const userNameRef = useRef(userName)
   const participantsRef = useRef(participants)
+  const volumeRef = useRef(participantsVolume)
+
+  navigator.mediaDevices
+    .getUserMedia({ audio: true })
+    .then(() => {
+      console.log('Microphone access granted')
+
+      return navigator.mediaDevices.enumerateDevices()
+    })
+    .then((devices) => {
+      const mics = devices.filter((device) => device.kind === 'audioinput')
+      // const outs = devices.filter((device) => device.kind === 'audiooutput')
+      setMicrophones(mics)
+      // setSpeakers(outs)
+    })
 
   useEffect(() => {
     participantsRef.current = participants
@@ -50,6 +65,10 @@ export default function Home(props: HomeProps) {
   useEffect(() => {
     userNameRef.current = userName
   }, [userName])
+
+  useEffect(() => {
+    volumeRef.current = participantsVolume
+  }, [participantsVolume])
 
   useEffect(() => {
     const handleDataMessage = (data: any) => {
@@ -63,11 +82,7 @@ export default function Home(props: HomeProps) {
           return
         }
 
-        for (const otherPlayer of players) {
-          if (otherPlayer.name === userNameRef.current) {
-            continue
-          }
-
+        for (const otherPlayer of players.filter((p) => p.name !== userNameRef.current)) {
           const sessionId = Object.keys(participantsRef.current).find(
             (key) => participantsRef.current[key].user_name === otherPlayer.name
           )
@@ -80,7 +95,9 @@ export default function Home(props: HomeProps) {
           setParticipantsVolume((prevVolumes) => ({
             ...prevVolumes,
             [sessionId]: {
-              ...participantsVolume[sessionId],
+              volume: participantsVolume[sessionId].volume
+                ? participantsVolume[sessionId].volume
+                : 100,
               distance: otherPlayer.distance,
             },
           }))
@@ -91,21 +108,8 @@ export default function Home(props: HomeProps) {
     subscription.onMessage(handleDataMessage)
   }, [subscription])
 
+  // Subscription to ProxChat transmit
   useEffect(() => {
-    navigator.mediaDevices
-      .getUserMedia({ audio: true })
-      .then(() => {
-        console.log('Microphone access granted')
-
-        return navigator.mediaDevices.enumerateDevices()
-      })
-      .then((devices) => {
-        const mics = devices.filter((device) => device.kind === 'audioinput')
-        // const outs = devices.filter((device) => device.kind === 'audiooutput')
-        setMicrophones(mics)
-        // setSpeakers(outs)
-      })
-
     subscription
       .create()
       .then(() => {
@@ -117,6 +121,13 @@ export default function Home(props: HomeProps) {
         console.log('Failed to connect to the channel', err)
       })
 
+    return () => {
+      subscription.delete()
+    }
+  }, [])
+
+  // Initialize Daily call object
+  useEffect(() => {
     if (!callObject) {
       const call = Daily.createCallObject()
       setCallObject(call)
@@ -142,39 +153,18 @@ export default function Home(props: HomeProps) {
         }))
       })
 
-      call.on('participant-joined', (event) => {
-        console.log('participant-joined', event)
-
-        if (event.participant.local) {
-          return
-        }
-
-        setParticipants((prevParticipants) => ({
-          ...prevParticipants,
-          [event.participant.session_id]: event.participant,
-        }))
-
-        setParticipantsVolume((prevVolumes) => ({
-          ...prevVolumes,
-          [event.participant.session_id]: {
-            volume: 100,
-            distance: 0,
-          },
-        }))
-      })
-
       call.on('participant-left', (event) => {
         console.log('participant-left', event)
 
-        setParticipants((prevParticipants) => {
-          const updatedParticipants = { ...prevParticipants }
+        setParticipants(() => {
+          const updatedParticipants = { ...participantsRef.current }
           delete updatedParticipants[event.participant.session_id]
 
           return updatedParticipants
         })
 
-        setParticipantsVolume((prevVolumes) => {
-          const updatedVolumes = { ...prevVolumes }
+        setParticipantsVolume(() => {
+          const updatedVolumes = { ...volumeRef.current }
           delete updatedVolumes[event.participant.session_id]
 
           return updatedVolumes
@@ -187,8 +177,6 @@ export default function Home(props: HomeProps) {
         callObject.leave()
         callObject.destroy()
       }
-
-      subscription.delete()
     }
   }, [])
 
