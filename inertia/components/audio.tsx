@@ -70,10 +70,10 @@ export function AudioItem({
       return
     }
 
-    const audioContext = new AudioContext()
-    const source = audioContext.createMediaElementSource(audioRef.current)
-    const merger = audioContext.createChannelMerger(1)
-    source.connect(merger).connect(audioContext.destination)
+    // const audioContext = new AudioContext()
+    // const source = audioContext.createMediaElementSource(audioRef.current)
+    // const merger = audioContext.createChannelMerger(1)
+    // source.connect(merger).connect(audioContext.destination)
 
     audioRef.current.srcObject = new MediaStream([participant.tracks.audio.persistentTrack])
   }, [participant])
