@@ -64,14 +64,21 @@ export default function Audio({
 }) {
   return (
     <>
-      {Object.values(participants).map((participant) => (
-        <AudioItem
-          key={participant.user_id}
-          participant={participant}
-          volume={volumes[participant.session_id] ?? { muted: false, volume: 100, distance: 0 }}
-          muted={muted}
-        />
-      ))}
+      {Object.values(participants)
+        .filter(
+          (p) => volumes[p.session_id] && volumes[p.session_id].volume !== undefined && !p.local
+        )
+        .map((participant) => (
+          <AudioItem
+            key={participant.user_id}
+            participant={participant}
+            volume={{
+              volume: volumes[participant.session_id].volume ?? 100,
+              distance: volumes[participant.session_id].distance ?? 0,
+            }}
+            muted={muted}
+          />
+        ))}
     </>
   )
 }
