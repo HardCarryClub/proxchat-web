@@ -87,6 +87,7 @@ export function AudioItem({
 
   return (
     <>
+      <button onClick={() => audioRef.current?.play()}>Enable {participant.user_name}</button>
       <audio autoPlay playsInline id={`audio-${participant.user_id}`} ref={audioRef} />
     </>
   )
