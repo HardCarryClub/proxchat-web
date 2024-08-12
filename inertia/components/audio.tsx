@@ -16,26 +16,44 @@ export function AudioItem({
   const audioRef = useRef<HTMLAudioElement>(null)
 
   useEffect(() => {
-    const audioElement = audioRef.current
-
-    // Check if audio should be played on user interaction
-    const playAudio = () => {
-      if (audioElement) {
-        audioElement.play().catch((error) => {
-          console.log('Autoplay was prevented, user interaction required')
-        })
+    navigator.permissions.query({ name: 'autoplay' }).then((result) => {
+      if (result.state === 'granted') {
+        audioRef.current.play()
+      } else {
+        console.log('Autoplay permission not granted')
       }
-    }
-
-    setTimeout(() => {
-      // Add an event listener for user interaction
-      document.addEventListener('click', playAudio, { once: true })
-    }, 1000)
-
-    return () => {
-      document.removeEventListener('click', playAudio)
-    }
+    })
   }, [])
+
+  useEffect(() => {
+    setTimeout(() => {
+      if (audioRef.current.muted) {
+        audioRef.current.muted = false
+      }
+    }, 2500)
+  }, [])
+
+  // useEffect(() => {
+  //   const audioElement = audioRef.current
+
+  //   // Check if audio should be played on user interaction
+  //   const playAudio = () => {
+  //     if (audioElement) {
+  //       audioElement.play().catch((error) => {
+  //         console.log('Autoplay was prevented, user interaction required')
+  //       })
+  //     }
+  //   }
+
+  //   setTimeout(() => {
+  //     // Add an event listener for user interaction
+  //     document.addEventListener('click', playAudio, { once: true })
+  //   }, 1000)
+
+  //   return () => {
+  //     document.removeEventListener('click', playAudio)
+  //   }
+  // }, [])
 
   useEffect(() => {
     if (audioRef.current) {
@@ -87,8 +105,8 @@ export function AudioItem({
 
   return (
     <>
-      <button onClick={() => audioRef.current?.play()}>Enable {participant.user_name}</button>
-      <audio autoPlay playsInline id={`audio-${participant.user_id}`} ref={audioRef} />
+      {/* <button onClick={() => audioRef.current?.play()}>Enable {participant.user_name}</button> */}
+      <audio autoPlay playsInline muted id={`audio-${participant.user_id}`} ref={audioRef} />
     </>
   )
 }
