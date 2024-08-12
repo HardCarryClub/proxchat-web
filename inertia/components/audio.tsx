@@ -37,27 +37,27 @@ export function AudioItem({
   //   }
   // }
 
-  // useEffect(() => {
-  //   const audioElement = audioRef.current
+  useEffect(() => {
+    const audioElement = audioRef.current
 
-  //   // Check if audio should be played on user interaction
-  //   const playAudio = () => {
-  //     if (audioElement) {
-  //       audioElement.play().catch((error) => {
-  //         console.log('Autoplay was prevented, user interaction required')
-  //       })
-  //     }
-  //   }
+    // Check if audio should be played on user interaction
+    const playAudio = () => {
+      if (audioElement) {
+        audioElement.play().catch((error) => {
+          console.log('Autoplay was prevented, user interaction required')
+        })
+      }
+    }
 
-  //   setTimeout(() => {
-  //     // Add an event listener for user interaction
-  //     document.addEventListener('click', playAudio, { once: true })
-  //   }, 1000)
+    setTimeout(() => {
+      // Add an event listener for user interaction
+      document.addEventListener('click', playAudio, { once: true })
+    }, 1000)
 
-  //   return () => {
-  //     document.removeEventListener('click', playAudio)
-  //   }
-  // }, [])
+    return () => {
+      document.removeEventListener('click', playAudio)
+    }
+  }, [])
 
   useEffect(() => {
     if (audioRef.current) {
