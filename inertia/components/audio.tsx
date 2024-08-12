@@ -15,23 +15,27 @@ export function AudioItem({
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  useEffect(() => {
-    navigator.permissions.query({ name: 'autoplay' }).then((result) => {
-      if (result.state === 'granted') {
-        audioRef.current.play()
-      } else {
-        console.log('Autoplay permission not granted')
-      }
-    })
-  }, [])
+  // useEffect(() => {
+  //   setTimeout(() => {
+  //     console.log('unmuting')
+  //     if (audioRef.current.muted) {
+  //       audioRef.current.muted = false
+  //     }
+  //   }, 2500)
+  // }, [])
 
-  useEffect(() => {
-    setTimeout(() => {
-      if (audioRef.current.muted) {
-        audioRef.current.muted = false
-      }
-    }, 2500)
-  }, [])
+  // const handleUserInteraction = () => {
+  //   const audioElement = audioRef.current
+  //   if (audioElement) {
+  //     audioElement.muted = false // Unmute the audio
+  //     audioElement
+  //       .play()
+  //       .then(() => console.log('playing'))
+  //       .catch((error) => {
+  //         console.log('Autoplay was prevented, user interaction required:', error)
+  //       })
+  //   }
+  // }
 
   // useEffect(() => {
   //   const audioElement = audioRef.current
@@ -84,29 +88,30 @@ export function AudioItem({
     const stream = new MediaStream([participant.tracks.audio.persistentTrack])
 
     // Create an AudioContext and convert the stream to mono
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
-    const source = audioContext.createMediaStreamSource(stream)
+    // const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    // const source = audioContext.createMediaStreamSource(stream)
 
-    // Create a merger with 1 channel, effectively making the output mono
-    const merger = audioContext.createChannelMerger(1)
+    // // Create a merger with 1 channel, effectively making the output mono
+    // const merger = audioContext.createChannelMerger(1)
 
-    // Connect the source to the merger, only to the first output channel (index 0)
-    source.connect(merger, 0, 0)
+    // // Connect the source to the merger, only to the first output channel (index 0)
+    // source.connect(merger, 0, 0)
 
-    // Connect the merger to a MediaStream destination
-    const destination = audioContext.createMediaStreamDestination()
-    merger.connect(destination)
+    // // Connect the merger to a MediaStream destination
+    // const destination = audioContext.createMediaStreamDestination()
+    // merger.connect(destination)
 
-    // Set the mono stream as the source for the audio element
-    audioRef.current.srcObject = destination.stream
+    // // Set the mono stream as the source for the audio element
+    // audioRef.current.srcObject = destination.stream
 
-    // audioRef.current.srcObject = stream
+    audioRef.current.srcObject = stream
   }, [participant])
 
   return (
     <>
       {/* <button onClick={() => audioRef.current?.play()}>Enable {participant.user_name}</button> */}
       <audio autoPlay playsInline muted id={`audio-${participant.user_id}`} ref={audioRef} />
+      {/* <button onClick={handleUserInteraction}>Enable Audio</button> */}
     </>
   )
 }
