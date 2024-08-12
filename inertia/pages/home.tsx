@@ -72,7 +72,9 @@ export default function Home(props: HomeProps) {
 
   useEffect(() => {
     const handleDataMessage = (data: any) => {
-      console.log('received logline data', data)
+      if ((window as any).DEBUG) {
+        console.log('received logline data', data)
+      }
 
       if (data.player && data.players) {
         const logLine: LogLine = data
@@ -131,7 +133,9 @@ export default function Home(props: HomeProps) {
       setCallObject(call)
 
       call.on('participant-updated', (event) => {
-        console.log('participant-updated', event)
+        if ((window as any).DEBUG) {
+          console.log('participant-updated', event)
+        }
 
         if (event.participant.local) {
           return

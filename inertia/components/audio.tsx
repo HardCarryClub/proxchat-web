@@ -41,7 +41,26 @@ export function AudioItem({
       return
     }
 
-    audioRef.current.srcObject = new MediaStream([participant.tracks.audio.persistentTrack])
+    const stream = new MediaStream([participant.tracks.audio.persistentTrack])
+
+    // Create an AudioContext and convert the stream to mono
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)()
+    const source = audioContext.createMediaStreamSource(stream)
+
+    // Create a merger with 1 channel, effectively making the output mono
+    const merger = audioContext.createChannelMerger(1)
+
+    // Connect the source to the merger, only to the first output channel (index 0)
+    source.connect(merger, 0, 0)
+
+    // Connect the merger to a MediaStream destination
+    const destination = audioContext.createMediaStreamDestination()
+    merger.connect(destination)
+
+    // Set the mono stream as the source for the audio element
+    audioRef.current.srcObject = destination.stream
+
+    // audioRef.current.srcObject = stream
   }, [participant])
 
   return (
