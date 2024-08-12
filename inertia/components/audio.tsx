@@ -15,14 +15,14 @@ export function AudioItem({
 }) {
   const audioRef = useRef<HTMLAudioElement>(null)
 
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     console.log('unmuting')
-  //     if (audioRef.current.muted) {
-  //       audioRef.current.muted = false
-  //     }
-  //   }, 2500)
-  // }, [])
+  useEffect(() => {
+    setTimeout(() => {
+      console.log('unmuting')
+      if (audioRef.current.muted) {
+        audioRef.current.muted = false
+      }
+    }, 2500)
+  }, [])
 
   // const handleUserInteraction = () => {
   //   const audioElement = audioRef.current
