@@ -95,9 +95,7 @@ export default function Home(props: HomeProps) {
           setParticipantsVolume((prevVolumes) => ({
             ...prevVolumes,
             [sessionId]: {
-              volume: participantsVolume[sessionId].volume
-                ? participantsVolume[sessionId].volume
-                : 100,
+              volume: participantsVolume[sessionId] ? participantsVolume[sessionId].volume : 100,
               distance: otherPlayer.distance,
             },
           }))
@@ -364,8 +362,6 @@ export default function Home(props: HomeProps) {
               .filter((participant) => !participant.local)
               .map((participant) => (
                 <div key={participant.session_id} className="flex gap-2 w-full">
-                  {/* <pre>{JSON.stringify(participant, null, 2)}</pre> */}
-                  {/* <img src={participant.userData.avatar} alt={participant.user_name || 'Unknown'} /> */}
                   <div>
                     <button
                       className="btn btn-square"
@@ -399,7 +395,7 @@ export default function Home(props: HomeProps) {
                       <span className="ml-2 text-xs text-gray-500">
                         {(participant.userData as any).displayName}
                       </span>
-                      {participantsVolume[participant.session_id] && (
+                      {participantsVolume[participant.session_id] && (window as any).DEBUG && (
                         <span>
                           (Adj. Vol ={' '}
                           {Number(
@@ -415,6 +411,7 @@ export default function Home(props: HomeProps) {
                               participantsVolume[participant.session_id].distance
                             ) / 100
                           ).toPrecision(2)}
+                          )
                         </span>
                       )}
 

@@ -21,9 +21,13 @@ export function AudioItem({
         audioRef.current.volume = 0
       } else {
         const adjustedVolume = calculateVolume(volume ?? 100, distance ?? 0)
-        console.log('volume in audio.tsx', volume)
-        console.log('adjustedVolume in audio.tsx', adjustedVolume)
         audioRef.current.volume = adjustedVolume / 100
+
+        if ((window as any).DEBUG) {
+          console.log(
+            `AudioItem: ${participant.user_id} volume: ${volume} distance: ${distance} adjustedVolume: ${adjustedVolume}`
+          )
+        }
       }
     }
   }, [volume, distance, audioRef, muted])
